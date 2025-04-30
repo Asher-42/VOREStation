@@ -29,7 +29,7 @@ var/global/datum/controller/occupations/job_master
 
 
 /datum/controller/occupations/proc/Debug(var/text)
-	if(!Debug2)	return 0
+	if(!GLOB.Debug2)	return 0
 	job_debug.Add(text)
 	return 1
 
@@ -353,7 +353,6 @@ var/global/datum/controller/occupations/job_master
 	for(var/mob/new_player/player in unassigned)
 		if(player.client.prefs.alternate_option == RETURN_TO_LOBBY)
 			player.ready = 0
-			player.new_player_panel_proc()
 			unassigned -= player
 	return 1
 
@@ -486,7 +485,7 @@ var/global/datum/controller/occupations/job_master
 	if(H.mind && job.department_accounts)
 		var/remembered_info = ""
 		for(var/D in job.department_accounts)
-			var/datum/money_account/department_account = department_accounts[D]
+			var/datum/money_account/department_account = GLOB.department_accounts[D]
 			if(department_account)
 				remembered_info += span_bold("Department account number ([D]):") + " #[department_account.account_number]<br>"
 				remembered_info += span_bold("Department account pin ([D]):") + " [department_account.remote_access_pin]<br>"
@@ -739,7 +738,7 @@ var/global/datum/controller/occupations/job_master
 						confirm = tgui_alert(pred, "[C.prefs.real_name] is attempting to spawn into your [vore_spawn_gut]. Let them?", "Confirm", list("No", "Yes"))
 				if(confirm != "Yes")
 					to_chat(C, span_warning("[pred] has declined your spawn request."))
-					var/message = sanitizeSafe(input(pred,"Do you want to leave them a message?")as text|null)
+					var/message = sanitizeSafe(tgui_input_text(pred,"Do you want to leave them a message?", "Notify Prey"))
 					if(message)
 						to_chat(C, span_notice("[pred] message : [message]"))
 					return
@@ -816,7 +815,7 @@ var/global/datum/controller/occupations/job_master
 						confirm = tgui_alert(prey, "[C.prefs.real_name] is attempting to televore you into their [vore_spawn_gut]. Let them?", "Confirm", list("No", "Yes"))
 				if(confirm != "Yes")
 					to_chat(C, span_warning("[prey] has declined your spawn request."))
-					var/message = sanitizeSafe(input(prey,"Do you want to leave them a message?")as text|null)
+					var/message = sanitizeSafe(tgui_input_text(prey,"Do you want to leave them a message?", "Notify Pred"))
 					if(message)
 						to_chat(C, span_notice("[prey] message : [message]"))
 					return
@@ -900,7 +899,7 @@ var/global/datum/controller/occupations/job_master
 					var/confirm = tgui_alert(carrier, "[C.prefs.real_name] is attempting to join as the [item_name] in your possession.", "Confirm", list("No", "Yes"))
 					if(confirm != "Yes")
 						to_chat(C, span_warning("[carrier] has declined your spawn request."))
-						var/message = sanitizeSafe(input(carrier,"Do you want to leave them a message?")as text|null)
+						var/message = sanitizeSafe(tgui_input_text(carrier,"Do you want to leave them a message?", "Notify Spawner"))
 						if(message)
 							to_chat(C, span_notice("[carrier] message : [message]"))
 						return
@@ -968,11 +967,11 @@ var/global/datum/controller/occupations/job_master
 				to_chat(C, span_warning("Your chosen spawnpoint ([spawnpos.display_name]) is unavailable for your chosen job. Please correct your spawn point choice."))
 				return
 			to_chat(C, span_filter_warning("Your chosen spawnpoint ([spawnpos.display_name]) is unavailable for your chosen job. Spawning you at the Arrivals shuttle instead."))
-			var/spawning = pick(latejoin)
+			var/spawning = pick(GLOB.latejoin)
 			.["turf"] = get_turf(spawning)
 			.["msg"] = "will arrive at the station shortly"
 	else if(!fail_deadly)
-		var/spawning = pick(latejoin)
+		var/spawning = pick(GLOB.latejoin)
 		.["turf"] = get_turf(spawning)
 		.["msg"] = "has arrived on the station"
 
