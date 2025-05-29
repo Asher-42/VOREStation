@@ -226,3 +226,6 @@
   - rscadd: Added a new event collector objector that is designed for events where
       players have to gather items to complete a recipe.
   - rscadd: Added a blocker object to accompany the event collector.
+2025-05-29:
+  Cameron-The-Raven:
+  - bugfix: Server is now more stable.
