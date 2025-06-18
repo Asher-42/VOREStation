@@ -472,6 +472,7 @@
 	rest_sprite_options = list("Default", "Sit")
 	pixel_x = 0
 	icon_x = 32
+	has_animation_flag = TRUE
 
 /datum/robot_sprite/dogborg/clown/stoat
 	name = "ST-04t"
