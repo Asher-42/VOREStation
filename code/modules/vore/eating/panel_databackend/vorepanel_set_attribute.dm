@@ -93,11 +93,14 @@
 			. = TRUE
 		if("b_egg_name")
 			var/new_egg_name = sanitize(params["val"], BELLIES_NAME_MAX, FALSE, TRUE, FALSE)
-			host.vore_selected.egg_name = new_egg_name
+			if(!new_egg_name)
+				host.vore_selected.egg_name = null
+			else
+				host.vore_selected.egg_name = new_egg_name
 			. = TRUE
 		if("b_egg_size")
 			var/new_egg_size = text2num(params["val"])
-			if(isnum(new_egg_size))
+			if(!isnum(new_egg_size))
 				return FALSE
 			if(new_egg_size == 0) //Disable.
 				host.vore_selected.egg_size = 0
@@ -398,11 +401,10 @@
 			host.vore_selected.eating_privacy_local = privacy_choice
 			. = TRUE
 		if("b_silicon_belly")
-			var/belly_choice = params["Val"]
+			var/belly_choice = params["val"]
 			if(!(belly_choice in list("Sleeper", "Vorebelly", "Both")))
 				return FALSE
-			for (var/belly in host.vore_organs)
-				var/obj/belly/B = belly
+			for(var/obj/belly/B in host.vore_organs)
 				B.silicon_belly_overlay_preference = belly_choice
 			host.update_icon()
 			. = TRUE
@@ -984,7 +986,7 @@
 			. = TRUE
 		if("b_tail_to_change_to")
 			var/tail_choice = params["val"]
-			if(!(tail_choice in global.tail_styles_list))
+			if(!(tail_choice in GLOB.tail_styles_list))
 				return FALSE
 			host.vore_selected.tail_to_change_to = tail_choice
 			. = TRUE

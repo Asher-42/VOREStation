@@ -4,6 +4,10 @@
 
 	var/datum/paiCandidate/candidate
 
+/datum/category_item/player_setup_item/general/basic_antagonism/New()
+	. = ..()
+	candidate = new()
+
 /datum/category_item/player_setup_item/general/basic_antagonism/load_character(list/save_data)
 	pref.exploit_record = save_data["exploit_record"]
 	pref.antag_faction  = save_data["antag_faction"]
@@ -17,6 +21,7 @@
 /datum/category_item/player_setup_item/general/basic_antagonism/load_preferences(datum/json_savefile/savefile)
 	if(!candidate)
 		candidate = new()
+
 	var/preference_mob = preference_mob()
 	if(!preference_mob)// No preference mob - this happens when we're called from client/New() before it calls ..()  (via datum/preferences/New())
 		spawn()
@@ -87,7 +92,7 @@
 				return TOPIC_REFRESH
 
 		if("antagfaction")
-			var/choice = tgui_input_list(user, "Please choose an antagonistic faction to work for.", "Character Preference", antag_faction_choices + list("None","Other"), pref.antag_faction)
+			var/choice = tgui_input_list(user, "Please choose an antagonistic faction to work for.", "Character Preference", GLOB.antag_faction_choices + list("None","Other"), pref.antag_faction)
 			if(!choice || !CanUseTopic(user))
 				return TOPIC_NOACTION
 			if(choice == "Other")
@@ -99,7 +104,7 @@
 			return TOPIC_REFRESH
 
 		if("antagvis")
-			var/choice = tgui_input_list(user, "Please choose an antagonistic visibility level.", "Character Preference", antag_visiblity_choices, pref.antag_vis)
+			var/choice = tgui_input_list(user, "Please choose an antagonistic visibility level.", "Character Preference", GLOB.antag_visiblity_choices, pref.antag_vis)
 			if(!choice || !CanUseTopic(user))
 				return TOPIC_NOACTION
 			else

@@ -62,7 +62,6 @@
 	var/max_age = 70
 
 	var/icodigi = 'icons/mob/human_races/r_digi.dmi'
-	var/digi_allowed = FALSE
 
 	// Language/culture vars.
 	var/default_language = LANGUAGE_GALCOM					// Default language is used when 'say' is used without modifiers.
@@ -268,10 +267,11 @@
 		O_LUNGS =		/obj/item/organ/internal/lungs,
 		O_VOICE = 		/obj/item/organ/internal/voicebox,
 		O_LIVER =		/obj/item/organ/internal/liver,
-		O_KIDNEYS =	/obj/item/organ/internal/kidneys,
+		O_KIDNEYS =		/obj/item/organ/internal/kidneys,
 		O_BRAIN =		/obj/item/organ/internal/brain,
-		O_APPENDIX = /obj/item/organ/internal/appendix,
-		O_EYES =		 /obj/item/organ/internal/eyes,
+		O_APPENDIX =	/obj/item/organ/internal/appendix,
+		O_SPLEEN =		/obj/item/organ/internal/spleen,
+		O_EYES =		/obj/item/organ/internal/eyes,
 		O_STOMACH =		/obj/item/organ/internal/stomach,
 		O_INTESTINE =	/obj/item/organ/internal/intestine
 		)
@@ -359,6 +359,7 @@
 	var/food_preference_bonus = 0
 
 	var/datum/component/species_component = null // The component that this species uses. Example: Xenochimera use /datum/component/xenochimera
+	var/component_requires_late_recalc = FALSE // If TRUE, the component will do special recalculation stuff at the end of update_icons_body()
 
 	// For Lleill and Hanner
 	var/lleill_energy = 200
@@ -371,6 +372,8 @@
 	var/grab_power_self = 0 //NYI - Used Downstream
 	var/waking_speed = 1 //NYI - Used Downstream
 	var/lightweight_light = 0 //NYI - Used Downstream
+	var/unarmed_bonus = 0 //do you have stronger unarmed attacks?
+	var/shredding = FALSE //do you shred when attacking? Affects escaping restraints, and punching normally unpunchable things
 
 /datum/species/proc/update_attack_types()
 	unarmed_attacks = list()
@@ -594,12 +597,11 @@
 			SEND_SIGNAL(H, COMSIG_XENOCHIMERA_COMPONENT)
 
 	//Shadekin Species Component.
-	/* //For when shadekin actually have their component control everything.
-	var/datum/component/shadekin/sk = H.get_xenochimera_component()
+	//For when shadekin actually have their component control everything.
+	var/datum/component/shadekin/sk = H.get_shadekin_component()
 	if(sk)
-		if(!H.stat || !(xc.revive_ready == REVIVING_NOW || xc.revive_ready == REVIVING_DONE))
+		if(!H.stat)
 			SEND_SIGNAL(H, COMSIG_SHADEKIN_COMPONENT)
-	*/
 
 // Used to update alien icons for aliens.
 /datum/species/proc/handle_login_special(var/mob/living/carbon/human/H)
@@ -622,7 +624,8 @@
 
 	if(!ignore_intent && H.a_intent != I_HURT)
 		return 0
-
+	if(shredding)
+		return 1
 	for(var/datum/unarmed_attack/attack in unarmed_attacks)
 		if(!attack.is_usable(H))
 			continue
@@ -668,7 +671,7 @@
 	return TRUE
 
 // Used to find a special target for falling on, such as pouncing on someone from above.
-/datum/species/proc/find_fall_target_special(src, landing)
+/datum/species/proc/find_fall_target_special(source, landing)
 	return FALSE
 
 // Used to override normal fall behaviour. Use only when the species does fall down a level.
@@ -800,11 +803,11 @@
 //We REALLY don't need to go through every variable. Doing so makes this lag like hell on 515
 /datum/species/proc/copy_variables(var/datum/species/S, var/list/whitelist)
 	//List of variables to ignore, trying to copy type will runtime.
-	//var/list/blacklist = list("type", "loc", "client", "ckey")
+	//var/list/blacklist = list(BLACKLISTED_COPY_VARS)
 	//Makes thorough copy of species datum.
 	for(var/i in whitelist)
-		if(!(i in S.vars)) //Don't copy incompatible vars.
-			continue
+		//if(!(i in S.vars)) // This check SOUNDS like a good idea, until you realize it loops over every var in base datum + species datum + byond builtin vars for EACH var in the whitelist. All the vars in whitelist are in the base species datum anyway, so this is unneeded.
+		//	continue
 		if(S.vars[i] != vars[i] && !islist(vars[i])) //If vars are same, no point in copying.
 			S.vars[i] = vars[i]
 

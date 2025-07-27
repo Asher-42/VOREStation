@@ -145,7 +145,6 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define SPECIES_TRAIT "species"
 #define ORGAN_TRAIT "organ"
 */
-#define ROUNDSTART_TRAIT "roundstart" //cannot be removed without admin intervention
 #define JOB_TRAIT "job"
 #define TRAIT_MIME "mime" //Mime trait.
 /*
@@ -209,6 +208,8 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define FROGENITE_TRAIT "frogenite"
 #define FERVEATIUM_TRAIT "ferveatium"
 */
+
+#define STRONG_IMMUNITY_TRAIT "strongimmunity"
 
 #define ORGANICS	1
 #define SYNTHETICS	2

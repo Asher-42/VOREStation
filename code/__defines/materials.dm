@@ -103,6 +103,7 @@
 #define MATERIAL_UNMELTABLE 0x1
 #define MATERIAL_BRITTLE    0x2
 #define MATERIAL_PADDING    0x4
+#define MATERIAL_NO_SYNTH	0x8
 
 #define TABLE_BRITTLE_MATERIAL_MULTIPLIER 4 // Amount table damage is multiplied by if it is made of a brittle material (e.g. glass)
 
@@ -117,3 +118,5 @@
 #define MATCONTAINER_SILENT (1<<3)
 
 #define GET_MATERIAL_REF(arguments...) _GetMaterialRef(list(##arguments))
+/// Makes sure only integer values are used when consuming, removing & checking for mats
+#define OPTIMAL_COST(cost)(max(1, round(cost)))

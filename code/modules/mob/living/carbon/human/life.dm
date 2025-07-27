@@ -523,8 +523,8 @@
 
 
 /mob/living/carbon/human/handle_breath(datum/gas_mixture/breath)
-	if(status_flags & GODMODE)
-		return
+	if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
+		return 0	// Cancelled by a component
 
 	if(mNobreath in mutations)
 		return
@@ -910,8 +910,8 @@
 	// +/- 50 degrees from 310.15K is the 'safe' zone, where no damage is dealt.
 	if(bodytemperature >= species.heat_level_1)
 		//Body temperature is too hot.
-		if(status_flags & GODMODE)
-			return 1	//godmode
+		if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
+			return 1	// Cancelled by a component
 
 		var/burn_dam = 0
 
@@ -933,8 +933,8 @@
 	else if(bodytemperature <= species.cold_level_1)
 		//Body temperature is too cold.
 
-		if(status_flags & GODMODE)
-			return 1	//godmode
+		if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
+			return 1	// Cancelled by a component
 
 
 		if(!istype(loc, /obj/machinery/atmospherics/unary/cryo_cell))
@@ -954,8 +954,8 @@
 
 	// Account for massive pressure differences.  Done by Polymorph
 	// Made it possible to actually have something that can protect against high pressure... Done by Errorage. Polymorph now has an axe sticking from his head for his previous hardcoded nonsense!
-	if(status_flags & GODMODE)
-		return 1	//godmode
+	if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
+		return 1	// Cancelled by a component
 
 	if(adjusted_pressure >= species.hazard_high_pressure)
 		var/pressure_damage = min( ( (adjusted_pressure / species.hazard_high_pressure) -1 )*PRESSURE_DAMAGE_COEFFICIENT , MAX_HIGH_PRESSURE_DAMAGE)
@@ -1151,13 +1151,25 @@
 							r_hand_blocked = 1-(100-getarmor(BP_R_HAND, "bio"))/100	//This should get a number between 0 and 1
 							total_phoronloss += vsc.plc.CONTAMINATION_LOSS * r_hand_blocked
 			if(total_phoronloss)
-				if(!(status_flags & GODMODE))
-					adjustToxLoss(total_phoronloss)
+				adjustToxLoss(total_phoronloss)
 
-	if(status_flags & GODMODE)
-		return 0	//godmode
+	if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
+		return 0	// Cancelled by a component
 
 	// nutrition decrease
+	// Species controls hunger rate for humans, otherwise use defaults
+	if(nutrition > 0 && stat != DEAD)
+		var/nutrition_reduction = DEFAULT_HUNGER_FACTOR
+		nutrition_reduction = species.hunger_factor
+		// Modifiers can increase or decrease nutrition cost
+		for(var/datum/modifier/mod in modifiers)
+			if(!isnull(mod.metabolism_percent))
+				nutrition_reduction *= mod.metabolism_percent
+		var/datum/component/nutrition_size_change/comp = GetComponent(/datum/component/nutrition_size_change)
+		if(comp)
+			nutrition_reduction *= comp.get_nutrition_multiplier()
+		adjust_nutrition(-nutrition_reduction)
+
 	if(noisy == TRUE && nutrition < 250 && prob(10))
 		var/sound/growlsound = sound(get_sfx("hunger_sounds"))
 		var/growlmultiplier = 100 - (nutrition / 250 * 100)
@@ -1188,7 +1200,8 @@
 	if(skip_some_updates())
 		return 0
 
-	if(status_flags & GODMODE)	return 0
+	if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
+		return 0	// Cancelled by a component
 
 	//SSD check, if a logged player is awake put them back to sleep!
 	if(species.get_ssd(src) && !client && !teleop)
@@ -1781,14 +1794,19 @@
 			playsound_local(src,pick(GLOB.scarySounds),50, 1, -1)
 
 /mob/living/carbon/human/proc/handle_changeling()
-	if(mind && mind.changeling)
-		mind.changeling.regenerate()
+	var/datum/component/antag/changeling/comp = is_changeling(src)
+	if(!comp)
+		if(mind && hud_used)
+			ling_chem_display.invisibility = INVISIBILITY_ABSTRACT
+		return
+	else
+		comp.regenerate()
 		if(hud_used)
 			ling_chem_display.invisibility = INVISIBILITY_NONE
 //			ling_chem_display.maptext = "<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#dd66dd'>[round(mind.changeling.chem_charges)]</font></div>"
-			switch(mind.changeling.chem_storage)
+			switch(comp.chem_storage)
 				if(1 to 50)
-					switch(mind.changeling.chem_charges)
+					switch(comp.chem_charges)
 						if(0 to 9)
 							ling_chem_display.icon_state = "ling_chems0"
 						if(10 to 19)
@@ -1802,7 +1820,7 @@
 						if(50)
 							ling_chem_display.icon_state = "ling_chems50"
 				if(51 to 80) //This is a crappy way of checking for engorged sacs...
-					switch(mind.changeling.chem_charges)
+					switch(comp.chem_charges)
 						if(0 to 9)
 							ling_chem_display.icon_state = "ling_chems0e"
 						if(10 to 19)
@@ -1821,13 +1839,11 @@
 							ling_chem_display.icon_state = "ling_chems70e"
 						if(80)
 							ling_chem_display.icon_state = "ling_chems80e"
-	else
-		if(mind && hud_used)
-			ling_chem_display.invisibility = INVISIBILITY_ABSTRACT
 
 /mob/living/carbon/human/handle_shock()
 	..()
-	if(status_flags & GODMODE)	return 0	//godmode
+	if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
+		return 0	// Cancelled by a component
 	if(traumatic_shock >= 80 && can_feel_pain())
 		shock_stage += 1
 	else

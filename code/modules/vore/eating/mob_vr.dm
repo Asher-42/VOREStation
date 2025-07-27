@@ -86,6 +86,7 @@
 	var/no_latejoin_prey_warning_persists = FALSE	//Do we save it?
 	var/belly_rub_target = null
 	var/soulcatcher_pref_flags = 0			//Default disabled
+	var/persistend_edit_mode = FALSE
 
 	var/voice_freq = 42500	// Preference for character voice frequency
 	var/emote_sound_mode = EMOTE_SOUND_VOICE_FREQ
@@ -93,3 +94,5 @@
 	var/enabled = TRUE //Pauses a mob if disabled (Prevents life ticks from happening)
 	var/died_in_vr = FALSE //For virtual reality sleepers
 	var/last_move_time = 0 //For movement smoothing
+
+	var/max_voreoverlay_alpha = 255

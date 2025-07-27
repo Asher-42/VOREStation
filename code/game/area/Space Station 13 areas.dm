@@ -1241,7 +1241,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 
 /area/crew_quarters/gym_private
 	name = "\improper Gym Sideroom"
-	icon_state = "pool" 
+	icon_state = "pool"
 
 /area/crew_quarters/sauna
 	name = "\improper Sauna"
@@ -2666,3 +2666,10 @@ var/list/the_station_areas = list (
 	luminosity = 1
 	dynamic_lighting = 0
 	requires_power = 0
+
+/area/shadekin
+	name = "\improper Shadekin Retreat"
+	icon_state = "blue"
+	requires_power = 0
+	ambience = AMBIENCE_OTHERWORLDLY
+	flags = RAD_SHIELDED | AREA_FLAG_IS_NOT_PERSISTENT | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE | AREA_LIMIT_DARK_RESPITE | AREA_ALLOW_CLOCKOUT

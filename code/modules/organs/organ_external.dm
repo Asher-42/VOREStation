@@ -132,16 +132,15 @@
 	if(!(robotic >= ORGAN_ROBOT))
 		return
 	var/burn_damage = 0
-	for(var/i = 1; i <= robotic; i++)
-		switch (severity)
-			if (1)
-				burn_damage += rand(5, 8)
-			if (2)
-				burn_damage += rand(4, 6)
-			if(3)
-				burn_damage += rand(2, 5)
-			if(4)
-				burn_damage += rand(1, 3)
+	switch (severity)
+		if (1)
+			burn_damage += rand(5, 8)
+		if (2)
+			burn_damage += rand(4, 6)
+		if(3)
+			burn_damage += rand(2, 5)
+		if(4)
+			burn_damage += rand(1, 3)
 
 	if(burn_damage)
 		take_damage(0, burn_damage)
@@ -216,6 +215,8 @@
 //new function to check for markings
 /obj/item/organ/external/proc/is_hidden_by_markings()
 	for(var/M in markings)
+		if(!markings[M]["on"]) //If the marking is off, the organ isn't hidden by it.
+			continue
 		var/datum/sprite_accessory/marking/mark_style = markings[M]["datum"]
 		if(istype(mark_style,/datum/sprite_accessory/marking) && (organ_tag in mark_style.hide_body_parts))
 			return 1
@@ -287,7 +288,17 @@
 	//Continued damage to vital organs can kill you, and robot organs don't count towards total damage so no need to cap them.
 	return (vital || (robotic >= ORGAN_ROBOT) || brute_dam + burn_dam + additional_damage < max_damage)
 
+/obj/item/organ/external/proc/is_fracturable()
+	if(robotic >= ORGAN_ROBOT)
+		return FALSE	//ORGAN_BROKEN doesn't have the same meaning for robot limbs
+	if((status & ORGAN_BROKEN) || cannot_break)
+		return FALSE
+	return TRUE
+
 /obj/item/organ/external/take_damage(brute, burn, sharp, edge, used_weapon = null, list/forbidden_limbs = list(), permutation = FALSE, projectile)
+	if(owner)
+		if(SEND_SIGNAL(owner, COMSIG_EXTERNAL_ORGAN_PRE_DAMAGE_APPLICATION, brute, burn, sharp, edge, used_weapon, forbidden_limbs, permutation, projectile) & COMPONENT_CANCEL_EXTERNAL_ORGAN_DAMAGE)
+			return 0 // If the signal returns, we don't apply damage, it's done its own special thing.
 	brute = round(brute * brute_mod, 0.1)
 	burn = round(burn * burn_mod, 0.1)
 
@@ -455,7 +466,8 @@
 								if(!C.is_stump())
 									C.take_damage(brute_on_children, burn_on_children, FALSE, FALSE, null, forbidden_limbs, 1) //Splits the damage to each individual 'child', incase multiple exist.
 					parent.take_damage(brute_third, burn_third, FALSE, FALSE, null, forbidden_limbs, 1)
-
+	if(owner)
+		SEND_SIGNAL(owner, COMSIG_EXTERNAL_ORGAN_POST_DAMAGE_APPLICATION, brute, burn, sharp, edge, used_weapon, forbidden_limbs, permutation, projectile)
 	return update_icon()
 
 /obj/item/organ/external/proc/heal_damage(brute, burn, internal = FALSE, robo_repair = FALSE)
@@ -1136,12 +1148,23 @@ Note that amputating the affected organ does in fact remove the infection from t
 	status |= ORGAN_BROKEN
 	broken_description = pick("broken","fracture","hairline fracture")
 	if(owner)
-		if(organ_can_feel_pain() && !isbelly(owner.loc) && !isliving(owner.loc) && !owner.transforming)
+		var/show_message = TRUE
+		var/scream = TRUE
+		if(!organ_can_feel_pain() || owner.transforming)
+			show_message = FALSE
+			scream = FALSE
+		if(isbelly(owner.loc) || isliving(owner.loc))
+			scream = FALSE
+			if(!owner.digest_pain)
+				show_message = FALSE
+
+		if(show_message)
 			owner.visible_message(\
 				span_danger("You hear a loud cracking sound coming from \the [owner]."),\
 				span_danger("Something feels like it shattered in your [name]!"),\
 				span_danger("You hear a sickening crack."))
-			owner.emote("scream")
+			if(scream)
+				owner.emote("scream")
 		jostle_bone()
 
 	// Fractures have a chance of getting you out of restraints
@@ -1268,6 +1291,8 @@ Note that amputating the affected organ does in fact remove the infection from t
 /obj/item/organ/external/proc/embed(var/obj/item/W, var/silent = 0)
 	if(!owner || loc != owner)
 		return
+	if(SEND_SIGNAL(owner, COMSIG_EMBED_OBJECT) & COMSIG_CANCEL_EMBED) //Normally we'd let this proc continue on, but it's much less time consumptive to just do a godmode check here.
+		return 0	// Cancelled by a component
 	if(!silent)
 		owner.visible_message(span_danger("\The [W] sticks in the wound!"))
 	implants += W
@@ -1477,6 +1502,8 @@ Note that amputating the affected organ does in fact remove the infection from t
 		return 1
 	if(clothing_only && markings.len)
 		for(var/M in markings)
+			if(!markings[M]["on"]) //If the marking is off, the organ isn't hidden by it.
+				continue
 			var/datum/sprite_accessory/marking/mark = markings[M]["datum"]
 			if(mark.hide_body_parts && (organ_tag in mark.hide_body_parts))
 				return 1

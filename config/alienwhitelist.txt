@@ -18,6 +18,8 @@ ashburndracki - Protean
 athena14 - Xenochimera
 athena14 - Protean
 auraribbon - Black-Eyed Shadekin
+avianaviator - Protean
+avianaviator - Hanner
 azmodan412 - Xenochimera
 beyondmylife - Protean
 bonktrauma - Diona
@@ -98,6 +100,8 @@ ktccd - Diona
 kyrendragon - Black-Eyed Shadekin
 lavenderrs - Teppi
 lazzar - Black-Eyed Shadekin
+lazzar - Hanner
+lewzharri - Hanner
 lianvee - Black-Eyed Shadekin
 lillianfyre - Xenochimera
 liquidfirefly - Protean
@@ -113,6 +117,8 @@ madmulk9 - Protean
 magpiemayhem - Vox
 magpiemayhem - Xenochimera
 makkinindorn - Protean
+malfestio - Protean
+malfestio - Xenochimera
 marcobarko - Black-Eyed Shadekin
 marcobarko - Protean
 maxcaliber50 - Protean
@@ -167,6 +173,7 @@ rubyflamewing - Protean
 rykkastormheart - Xenochimera
 ryumi - Protean
 ryumi - Xenochimera
+ryumi - Black-Eyed Shadekin
 satinisle - Black-Eyed Shadekin
 satinisle - Protean
 scoutisafolflol - Xenochimera
@@ -201,6 +208,7 @@ terrestris - Vox
 thedavestdave - Protean
 theoun - Hanner
 thexdkidoflol - Xenochimera
+tigercat2000 - Protean
 timidvi - Diona
 titaania - Protean
 tombomb90 - Protean

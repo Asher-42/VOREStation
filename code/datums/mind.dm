@@ -31,6 +31,8 @@
 	var/assigned_role
 	var/special_role
 
+	var/datum/antag_holder/antag_holder
+
 	var/role_alt_title
 
 	var/datum/job/assigned_job
@@ -41,11 +43,10 @@
 	var/has_been_rev = 0//Tracks if this mind has been a rev or not
 
 	var/datum/faction/faction 			//associated faction
-	var/datum/changeling/changeling		//changeling holder
 
 	var/rev_cooldown = 0
 	var/tcrystals = 0
-	var/list/purchase_log = new
+	var/list/purchase_log = list()
 	var/used_TC = 0
 
 	var/list/learned_recipes //List of learned recipe TYPES.
@@ -70,15 +71,18 @@
 /datum/mind/New(var/key)
 	src.key = key
 	purchase_log = list()
+	antag_holder = new
 	..()
 
 /datum/mind/proc/transfer_to(mob/living/new_character, force = FALSE)
 	if(!istype(new_character))
 		to_world_log("## DEBUG: transfer_to(): Some idiot has tried to transfer_to() a non mob/living mob. Please inform Carn")
-	if(current)					//remove ourself from our old body's mind variable
-		if(changeling)
+	var/datum/component/antag/changeling/comp
+	if(current)
+		comp = is_changeling(current)			//remove ourself from our old body's mind variable
+		if(comp)
 			current.remove_changeling_powers()
-			remove_verb(current, /datum/changeling/proc/EvolutionMenu)
+			remove_verb(current, /mob/proc/EvolutionMenu)
 		current.mind = null
 
 	if(new_character.mind)		//remove any mind currently in our new body's mind variable
@@ -87,7 +91,7 @@
 	current = new_character		//link ourself to our new body
 	new_character.mind = src	//and link our new body to ourself
 
-	if(changeling)
+	if(comp)
 		new_character.make_changeling()
 
 	if(active || force)
@@ -95,7 +99,6 @@
 
 	if(new_character.client)
 		new_character.client.init_verbs() // re-initialize character specific verbs
-		new_character.set_listed_turf(null)
 
 /datum/mind/proc/store_memory(new_text)
 	memory += "[new_text]<BR>"
@@ -114,7 +117,10 @@
 
 	if(ambitions)
 		output += "<HR><B>Ambitions:</B> [ambitions]<br>"
-	recipient << browse("<html>[output]</html>","window=memory")
+
+	var/datum/browser/popup = new(recipient, "memory", "Memory")
+	popup.set_content(output)
+	popup.open()
 
 /datum/mind/proc/edit_memory()
 	if(!ticker || !ticker.mode)
@@ -149,7 +155,10 @@
 		out += "None."
 	out += "<br><a href='byond://?src=\ref[src];[HrefToken()];obj_add=1'>\[add\]</a><br><br>"
 	out += span_bold("Ambitions:") + " [ambitions ? ambitions : "None"] <a href='byond://?src=\ref[src];[HrefToken()];amb_edit=\ref[src]'>\[edit\]</a></br>"
-	usr << browse("<html>[out]</html>", "window=edit_memory[src]")
+
+	var/datum/browser/popup = new(usr, "edit_memory[src]", "Edit Memory")
+	popup.set_content(out)
+	popup.open()
 
 /datum/mind/Topic(href, href_list)
 	if(!check_rights(R_ADMIN|R_FUN|R_EVENT))	return
@@ -179,7 +188,7 @@
 		if(antag) antag.place_mob(src.current)
 
 	else if (href_list["role_edit"])
-		var/new_role = tgui_input_list(usr, "Select new role", "Assigned role", assigned_role, joblist)
+		var/new_role = tgui_input_list(usr, "Select new role", "Assigned role", assigned_role, GLOB.joblist)
 		if (!new_role) return
 		assigned_role = new_role
 
@@ -216,7 +225,7 @@
 			if(!def_value)//If it's a custom objective, it will be an empty string.
 				def_value = "custom"
 
-		var/list/choices = list("assassinate", "debrain", "protect", "prevent", "harm", "brig", "hijack", "escape", "survive", "steal", "download", "mercenary", "capture", "absorb", "custom")
+		var/list/choices = list("assassinate", "debrain", "protect", "prevent", "harm", "brig", "hijack", "escape", "survive", "steal", "mercenary", "capture", "absorb", "custom")
 		var/new_obj_type = tgui_input_list(usr, "Select objective type:", "Objective type", choices, def_value)
 		if (!new_obj_type) return
 
@@ -285,7 +294,7 @@
 				if (!steal.select_target())
 					return
 
-			if("download","capture","absorb", "vore")
+			if("capture","absorb", "vore")
 				var/def_num
 				if(objective&&objective.type==text2path("/datum/objective/[new_obj_type]"))
 					def_num = objective.target_amount
@@ -295,9 +304,6 @@
 					return
 
 				switch(new_obj_type)
-					if("download")
-						new_objective = new /datum/objective/download
-						new_objective.explanation_text = "Download [target_number] research levels."
 					if("capture")
 						new_objective = new /datum/objective/capture
 						new_objective.explanation_text = "Accumulate [target_number] capture points."
@@ -465,7 +471,7 @@
 	role_alt_title =  null
 	assigned_job =    null
 	//faction =       null //Uncommenting this causes a compile error due to 'undefined type', fucked if I know.
-	changeling =      null
+	//changeling =    null //TODO: Figure out where this is all used and move it from mind to mob.
 	initial_account = null
 	objectives =      list()
 	special_verbs =   list()
@@ -484,7 +490,7 @@
 		return 0
 
 /datum/mind/proc/get_ghost(even_if_they_cant_reenter)
-	for(var/mob/observer/dead/G in player_list)
+	for(var/mob/observer/dead/G in GLOB.player_list)
 		if(G.mind == src)
 			if(G.can_reenter_corpse || even_if_they_cant_reenter)
 				return G
