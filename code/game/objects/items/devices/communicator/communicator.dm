@@ -75,17 +75,6 @@
 
 	// Ringtones! (Based on the PDA ones)
 	var/ttone = "beep" //The ringtone!
-	var/list/ttone_sound = list("beep" = 'sound/machines/twobeep.ogg',
-								"boom" = 'sound/effects/explosionfar.ogg',
-								"slip" = 'sound/misc/slip.ogg',
-								"honk" = 'sound/items/bikehorn.ogg',
-								"SKREE" = 'sound/voice/shriek1.ogg',
-								// "holy" = 'sound/items/PDA/ambicha4-short.ogg',
-								"xeno" = 'sound/voice/hiss1.ogg',
-								"dust" = 'sound/effects/supermatter.ogg',
-								"spark" = 'sound/effects/sparks4.ogg',
-								"rad" = 'sound/items/geiger/high1.ogg',
-								"servo" = 'sound/machines/rig/rigservo.ogg')
 	pickup_sound = 'sound/items/pickup/device.ogg'
 	drop_sound = 'sound/items/drop/device.ogg'
 
@@ -158,10 +147,10 @@
 		else
 			. += span_notice("The device doesn't appear to be transmitting any data.")
 
-// Proc: emp_act()
+// Proc: emp_act(severity, recursive)
 // Parameters: None
 // Description: Drops all calls when EMPed, so the holder can then get murdered by the antagonist.
-/obj/item/communicator/emp_act()
+/obj/item/communicator/emp_act(severity, recursive)
 	close_connection(reason = "Hardware error de%#_^@%-BZZZZZZZT")
 
 // Proc: add_to_EPv2()
@@ -246,7 +235,7 @@
 	var/mob/M = usr
 	if (!(src.loc == usr) || (src.loc && src.loc.loc == usr))
 		return
-	if(!istype(over_object, /obj/screen))
+	if(!istype(over_object, /atom/movable/screen))
 		return attack_self(M)
 	return
 
@@ -279,7 +268,7 @@
 /mob/observer/dead/Destroy()
 	if(exonet)
 		exonet.remove_address()
-		qdel_null(exonet)
+		QDEL_NULL(exonet)
 	. = ..()
 
 // Proc: register_device()

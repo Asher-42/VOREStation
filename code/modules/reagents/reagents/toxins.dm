@@ -135,7 +135,7 @@
 		if(prob(10))
 			to_chat(M, span_critical("You feel something boiling within you!"))
 			spawn(rand(30, 60))
-				M.IgniteMob()
+				M.ignite_mob()
 
 /datum/reagent/toxin/lead
 	name = REAGENT_LEAD
@@ -182,6 +182,7 @@
 	skin_danger = 1
 	supply_conversion_value = 5 SHEET_TO_REAGENT_EQUIVILENT // has sheet value
 	industrial_use = REFINERYEXPORT_REASON_PHORON
+	coolant_modifier = 0.85
 
 /datum/reagent/toxin/phoron/touch_mob(var/mob/living/L, var/amount)
 	..()
@@ -583,7 +584,7 @@
 		to_chat(M, span_warning("Your veins feel like they're on fire!"))
 		M.adjust_fire_stacks(0.1)
 	else if(prob(5))
-		M.IgniteMob()
+		M.ignite_mob()
 		to_chat(M, span_critical("Some of your veins rupture, the exposed blood igniting!"))
 
 /datum/reagent/condensedcapsaicin/venom

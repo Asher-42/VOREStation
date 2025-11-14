@@ -72,6 +72,8 @@
 	if(stat == DEAD)
 		return 0
 	SEND_SIGNAL(src, COMSIG_MOB_DEATH, gibbed)
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_MOB_DEATH, src, gibbed)
+
 	if(src.loc && istype(loc,/obj/belly) || istype(loc,/obj/item/dogborg/sleeper)) deathmessage = "no message" //VOREStation Add - Prevents death messages from inside mobs
 	facing_dir = null
 
@@ -116,8 +118,8 @@
 	handle_regular_hud_updates()
 	handle_vision()
 
-	if(ticker && ticker.mode)
-		ticker.mode.check_win()
+	if(SSticker && SSticker.mode)
+		SSticker.mode.check_win()
 
 
 	return 1

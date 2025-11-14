@@ -136,7 +136,7 @@
 	return rand(32000, 55000) //Frequency stuff only works with 45kbps oggs.
 
 /client/proc/playtitlemusic()
-	if(!ticker || !SSmedia_tracks.lobby_tracks.len || !media)	return
+	if(!SSticker || !SSmedia_tracks.lobby_tracks.len || !media)	return
 	if(prefs?.read_preference(/datum/preference/toggle/play_lobby_music))
 		var/datum/track/T = pick(SSmedia_tracks.lobby_tracks)
 		media.push_music(T.url, world.time, 0.35)
@@ -393,13 +393,6 @@ var/list/species_sound_map = list(
 	"None" = no_sounds,
 	"Unset" = use_default
 )
-
-/* // Not sure we even really need this
-/hook/startup/proc/Init_species_sounds() // The entries we're checking over MUST have unique keys.
-	for(var/i in species_sound_map)
-		species_sounds |= species_sound_map[i]
-	return 1
-*/
 
 /*
  * Call this for when you need a sound from an already-identified list - IE, "Canine". pick() cannot parse procs.
