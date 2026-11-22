@@ -1,8 +1,9 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { useBackend } from 'tgui/backend';
-import { Box, Button, Floating, Stack, Tooltip } from 'tgui-core/components';
+import { Box, Button, Floating, Stack } from 'tgui-core/components';
 
 import type { CheckBoxEntry } from '../types';
+import { VorePanelTooltip } from './VorePanelTooltip';
 
 export const VorePanelEditCheckboxes = (
   props: {
@@ -18,7 +19,7 @@ export const VorePanelEditCheckboxes = (
     /** Our tooltips associated to the checkbox actions as Record mapping our options to a tooltip */
     tooltipList: Record<string, string>;
     /** Our displayed tooltip behind the input element */
-    tooltip: string;
+    tooltip: ReactNode;
     /** The position of the tooltip if static */
     tooltipPosition: ComponentProps<typeof Floating>['placement'];
   }>,
@@ -67,11 +68,15 @@ export const VorePanelEditCheckboxes = (
               <Box className="VorePanel__floatingButton">+/-</Box>
             </Floating>
           </Stack.Item>
-          <Stack.Item>
-            <Tooltip content={tooltip} position={tooltipPosition}>
-              <Box className="VorePanel__floatingButton">?</Box>
-            </Tooltip>
-          </Stack.Item>
+          {!!tooltip && (
+            <Stack.Item>
+              <VorePanelTooltip
+                tooltip={tooltip}
+                tooltipPosition={tooltipPosition}
+                displayText="?"
+              />
+            </Stack.Item>
+          )}
         </>
       )}
       <Stack.Item grow>

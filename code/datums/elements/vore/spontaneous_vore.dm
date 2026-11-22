@@ -7,7 +7,8 @@
 	RegisterSignal(target, COMSIG_LIVING_STUMBLED_INTO, PROC_REF(handle_stumble))
 	RegisterSignal(target, COMSIG_LIVING_FALLING_DOWN, PROC_REF(handle_fall))
 	RegisterSignal(target, COMSIG_LIVING_HIT_BY_THROWN_ENTITY, PROC_REF(handle_hitby))
-	RegisterSignal(target, COMSIG_MOVABLE_CROSS, PROC_REF(handle_crossed))
+	//RegisterSignal(target, COMSIG_MOVABLE_CROSS, PROC_REF(handle_crossed))
+	RegisterSignals(target, list(COMSIG_ON_LIVING_SLIP, COMSIG_AFTER_LIVING_SLIDE), PROC_REF(handle_slipnom))
 
 /datum/element/spontaneous_vore/Detach(datum/target)
 	. = ..()
@@ -51,6 +52,11 @@
 	if(!drop_mob || drop_mob == source)
 		return
 
+	if((drop_mob.status_flags & HIDING))
+		var/obj/structure/table/is_there_a_table = locate() in landing //Don't eat people hiding under tables
+		if(is_there_a_table)
+			return
+
 	//pred = drop_mob
 	//prey = source
 	//result: source is eaten by drop_mob
@@ -68,20 +74,17 @@
 		source.visible_message(span_vdanger("\The [drop_mob] falls right into \the [source]!"))
 		return COMSIG_CANCEL_FALL
 
-/datum/element/spontaneous_vore/proc/handle_hitby(mob/living/source, atom/movable/hitby, speed)
+/datum/element/spontaneous_vore/proc/handle_hitby(mob/living/source, atom/movable/hitby, mob/thrower, speed)
 	SIGNAL_HANDLER
 
 	//Handle object throw vore
 	if(isitem(hitby))
-		var/obj/item/O = hitby
-		var/obj/belly/destination_belly = source.get_current_spont_belly(O)
+		var/obj/item/thrown_object = hitby
+		var/obj/belly/destination_belly = source.get_current_spont_belly(thrown_object)
 		if(!destination_belly)
 			return
 		if(source.stat != DEAD && source.trash_catching)
-			if(source.adminbus_trash || is_type_in_list(O, GLOB.edible_trash) && O.trash_eatable && !is_type_in_list(O, GLOB.item_vore_blacklist))
-				source.visible_message(span_vwarning("[O] is thrown directly into [source]'s [lowertext(destination_belly.name)]!"))
-				O.throwing = 0
-				destination_belly.nom_atom(O)
+			if(source.eat_trash_proc(thrown_object, thrown = TRUE))
 				return COMSIG_CANCEL_HITBY
 
 	//Throwing a prey into a pred takes priority. After that it checks to see if the person being thrown is a pred.
@@ -105,7 +108,11 @@
 			destination_belly.nom_atom(thrown_mob) //Eat them!!!
 			source.visible_message(span_vwarning("[thrown_mob] is thrown right into [source]'s [lowertext(destination_belly.name)]!"))
 			source.on_throw_vore_special(TRUE, thrown_mob)
-			add_attack_logs(thrown_mob.thrower,source,"Devoured [thrown_mob.name] via throw vore.")
+
+			if(thrower)
+				add_attack_logs(thrower,source,"Devoured [thrown_mob.name] via throw vore.")
+			else
+				log_vore("[source] devoured [thrown_mob.name] via throw vore.")
 			return COMSIG_CANCEL_HITBY //We can stop here. We don't need to calculate damage or anything else. They're eaten.
 
 		// PERSON BEING HIT: CAN BE DROP PREY, ALLOWS THROW VORE, AND IS DEVOURABLE.
@@ -116,30 +123,37 @@
 				return
 			source.visible_message(span_vwarning("[source] suddenly slips inside of [thrown_mob]'s [lowertext(destination_belly.name)] as [thrown_mob] flies into them!"))
 			destination_belly.nom_atom(source) //Eat them!!!
-			add_attack_logs(thrown_mob.LAssailant,source,"Was Devoured by [thrown_mob.name] via throw vore.")
+			if(source.loc != thrown_mob.vore_selected)
+				source.forceMove(thrown_mob.vore_selected) //Double check. Should never happen but...Weirder things have happened!
+			if(thrower)
+				add_attack_logs(thrower,source,"Was Devoured by [thrown_mob.name] via throw vore.")
+			else
+				log_vore("[source] Was Devoured by [thrown_mob.name] via throw vore.")
 			return COMSIG_CANCEL_HITBY
 
-//source = person standing up
-//crossed = person sliding
-/datum/element/spontaneous_vore/proc/handle_crossed(mob/living/source, mob/living/crossed)
+//source = person sliding
+//victim = person being slid into (or past)
+/datum/element/spontaneous_vore/proc/handle_slipnom(mob/living/source)
 	SIGNAL_HANDLER
 
-	if(source == crossed || !istype(crossed))
-		return
+	for(var/mob/living/victim in source.loc) //Specifically loc. This can result in spont vore inside of non-turfs like closets, and vorebellies for shenanigans.
+
+		if(source == victim || !istype(victim))
+			continue
 
 
-	//Person being slipped into eats the person slipping
-	if(can_slip_vore(pred = source, prey = crossed))	//If we can vore them go for it
-		var/obj/belly/destination_belly = source.get_current_spont_belly(crossed)
-		if(!destination_belly)
+		//Person being slipped into eats the person slipping
+		if(can_slip_vore(pred = victim, prey = source))
+			var/obj/belly/destination_belly = victim.get_current_spont_belly(source)
+			if(!destination_belly)
+				continue
+			source.begin_instant_nom(victim, prey = source, pred = victim, belly = destination_belly) //Must be
 			return
-		source.begin_instant_nom(source, prey = crossed, pred = source, belly = destination_belly)
-		return COMPONENT_BLOCK_CROSS
 
-	//The person slipping eats the person being slipped into
-	else if(can_slip_vore(pred = crossed, prey = source))
-		var/obj/belly/destination_belly = crossed.get_current_spont_belly(source)
-		if(!destination_belly)
-			return
-		source.begin_instant_nom(crossed, prey = source, pred = crossed, belly = destination_belly) //Must be
-		return //We DON'T block it here. Pred can slip onto the prey's tile, no problem.
+		//The person slipping eats the person being slipped into
+		else if(can_slip_vore(pred = source, prey = victim))	//If we can vore them go for it
+			var/obj/belly/destination_belly = source.get_current_spont_belly(victim)
+			if(!destination_belly)
+				continue
+			source.begin_instant_nom(source, prey = victim, pred = source, belly = destination_belly)
+			continue //We DON'T block it here. Pred can slip onto the prey's tile, no problem.

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { BooleanLike } from 'tgui-core/react';
 
 export type Data = {
@@ -7,6 +8,7 @@ export type Data = {
   show_pictures: BooleanLike;
   icon_overflow: BooleanLike;
   prey_abilities: PreyAbilityData[] | null;
+  intent_data: IntentData | null;
   active_tab: number;
   persist_edit_mode: BooleanLike;
   presets: string;
@@ -66,6 +68,7 @@ export type BellyModeData = {
   mode: string;
   item_mode: string;
   addons: CheckBoxEntry[];
+  vore_types: CheckBoxEntry[];
   name_length: number;
   name_min: number;
   mode_options: string[];
@@ -193,7 +196,7 @@ export type BellyVisualData = {
 };
 
 export type BellyInteractionData = {
-  escapable: BooleanLike;
+  escapable: number;
   interacts: interactData;
   autotransfer_enabled: BooleanLike;
   autotransfer: AutotransferData;
@@ -207,10 +210,13 @@ export type ContentData = {
   outside: BooleanLike;
   icon: string;
   our_type: string;
+  damage: number;
+  nutrition?: number;
 };
 
 export type BellyLiquidData = {
   show_liq: BooleanLike;
+  liq_gen_resources: number;
   liq_interacts: LiqInteractData;
 };
 
@@ -277,6 +283,7 @@ export type LiqInteractData = {
   liq_reagent_transfer_verb: string;
   liq_reagent_nutri_rate: number;
   liq_reagent_capacity: number;
+  liq_gen_cost_limit: number;
   liq_sloshing: BooleanLike;
   liq_reagent_addons: CheckBoxEntry[];
   custom_reagentcolor: string;
@@ -334,7 +341,7 @@ export type PrefData = {
   consume_liquid_belly: BooleanLike;
   autotransferable: BooleanLike;
   noisy_full: BooleanLike;
-  selective_active: string;
+  dropdown_preferences: DropdownPrefernces;
   allow_mind_transfer: BooleanLike;
   drop_vore: BooleanLike;
   slip_vore: BooleanLike;
@@ -351,6 +358,12 @@ export type PrefData = {
   soulcatcher_allow_deletion: BooleanLike;
   soulcatcher_allow_takeover: BooleanLike;
   max_voreoverlay_alpha: number;
+  vore_pref_types: CheckBoxEntry[];
+};
+
+export type DropdownPrefernces = {
+  strip_active: number;
+  selective_active: string;
 };
 
 export type ScMessageData = {
@@ -410,11 +423,7 @@ export type AestMessageData = {
   possible_messages: string[];
   aest_subtab: string;
   max_length: number;
-  active_message:
-    | string
-    | string[]
-    | null
-    | Record<string | number, string | number>; // The record is an ancient data corruption, it's not valid!
+  active_message: string | string[] | null | Record<string, string | number>; // The record is an ancient data corruption, it's not valid!
   set_action: string;
   tooltip: string;
   sub_action?: string;
@@ -483,7 +492,7 @@ export type PreferenceData = {
 
 export type ActionButtonData = {
   name: string;
-  tooltip: string;
+  tooltip: ReactNode;
   disabled?: boolean;
   color?: string;
   needsConfirm?: boolean;
@@ -498,4 +507,23 @@ export type Overlay = {
   icon: string;
   iconState: string;
   color?: string;
+};
+
+export type IntentData = {
+  active: BooleanLike;
+  current_intent: string;
+  help: BooleanLike;
+  disarm: BooleanLike;
+  grab: BooleanLike;
+  harm: BooleanLike;
+};
+
+export type PreferenceDropdown = {
+  action: string;
+  prefix: string;
+  tooltip: string;
+  data: Record<
+    string,
+    { displayText: string; color?: string; enabled?: boolean }
+  >;
 };

@@ -1,14 +1,9 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { useBackend } from 'tgui/backend';
-import {
-  Box,
-  Dropdown,
-  type Floating,
-  Stack,
-  Tooltip,
-} from 'tgui-core/components';
+import { Box, Dropdown, type Floating, Stack } from 'tgui-core/components';
 
 import type { DropdownEntry } from '../types';
+import { VorePanelTooltip } from './VorePanelTooltip';
 
 export const VorePanelEditDropdown = (
   props: {
@@ -23,12 +18,14 @@ export const VorePanelEditDropdown = (
   } & Partial<{
     /** Our secondary backend action on selection */
     subAction: string;
+    /** Allows to turn the dropdown to a searchable one */
+    searchInput: boolean;
     /** Color of the dropdown and text */
     color: string;
     /** Icon of the dropdown */
     icon: string;
     /** Our displayed tooltip behind the input element */
-    tooltip: string;
+    tooltip: ReactNode;
     /** The position of the tooltip if static */
     tooltipPosition: ComponentProps<typeof Floating>['placement'];
   }>,
@@ -41,31 +38,46 @@ export const VorePanelEditDropdown = (
     options,
     action,
     subAction = '',
+    searchInput,
     color,
     icon,
     tooltip,
     tooltipPosition,
   } = props;
 
+  const normalizedOptions: DropdownEntry[] = options.map((opt) =>
+    typeof opt === 'string' ? { value: opt, displayText: opt } : opt,
+  );
+
+  const entryValue =
+    normalizedOptions.find((o) => o.displayText === entry)?.value ?? '';
+
+  function saneAct(value: string) {
+    if (value !== entryValue) act(action, { attribute: subAction, val: value });
+  }
+
   return editMode ? (
     <Stack>
       <Stack.Item grow>
         <Dropdown
           fluid
+          searchInput={searchInput}
+          styledInput={searchInput}
           color={color}
-          onSelected={(value) =>
-            act(action, { attribute: subAction, val: value })
-          }
+          onSelected={saneAct}
           options={options}
           selected={entry}
+          displayText={entry}
           icon={icon}
         />
       </Stack.Item>
       {tooltip && (
         <Stack.Item>
-          <Tooltip content={tooltip} position={tooltipPosition}>
-            <Box className="VorePanel__floatingButton">?</Box>
-          </Tooltip>
+          <VorePanelTooltip
+            tooltip={tooltip}
+            tooltipPosition={tooltipPosition}
+            displayText="?"
+          />
         </Stack.Item>
       )}
     </Stack>

@@ -27,15 +27,15 @@ SUBSYSTEM_DEF(nightshift)
 
 /datum/controller/subsystem/nightshift/proc/announce(message)
 	var/announce_z
-	if(using_map.station_levels.len)
+	if(length(using_map.station_levels))
 		announce_z = pick(using_map.station_levels)
 	var/pickedsound
 	if(!high_security_mode)
 		if(nightshift_active)
-			pickedsound = 'sound/AI/dim_lights.ogg'
+			pickedsound = ANNOUNCER_MSG_NIGHTSHIFT_START
 		else
-			pickedsound = 'sound/AI/bright_lights.ogg'
-	priority_announcement.Announce(message, new_title = "Automated Lighting System Announcement", new_sound = pickedsound, zlevel = announce_z)
+			pickedsound = ANNOUNCER_MSG_NIGHTSHIFT_END
+	GLOB.priority_announcement.Announce(message, new_title = "Automated Lighting System Announcement", new_sound = pickedsound, zlevel = announce_z)
 
 /datum/controller/subsystem/nightshift/proc/check_nightshift(forced) //This is called from elsewhere, like setting the alert levels, sadly
 	var/emergency = GLOB.security_level > SEC_LEVEL_GREEN

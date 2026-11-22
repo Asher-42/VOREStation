@@ -1,4 +1,11 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useBackend } from 'tgui/backend';
 import {
   Box,
@@ -29,9 +36,17 @@ const DescriptionSyntaxHighlighting = (props: { desc: string }) => {
     let lastIndex = 0;
     let result = regexCopy.exec(desc);
     while (result !== null) {
-      elements.push(desc.substring(lastIndex, result.index));
       elements.push(
-        <Box inline color={SYNTAX_COLOR[result[0]] || 'purple'}>
+        <Fragment key={`text-${result.index}`}>
+          {desc.substring(lastIndex, result.index)}
+        </Fragment>,
+      );
+      elements.push(
+        <Box
+          key={`syntax-${result.index}`}
+          inline
+          color={SYNTAX_COLOR[result[0]] || 'purple'}
+        >
           {result[0]}
         </Box>,
       );
@@ -39,7 +54,11 @@ const DescriptionSyntaxHighlighting = (props: { desc: string }) => {
       result = regexCopy.exec(desc);
     }
 
-    elements.push(desc.substring(lastIndex));
+    elements.push(
+      <Fragment key={`text-end-${lastIndex}`}>
+        {desc.substring(lastIndex)}
+      </Fragment>,
+    );
 
     setHtmlDesc(elements);
   }, [desc]);
@@ -146,7 +165,7 @@ export const VorePanelEditTextArea = (
     /** Our secondary backend action if we used a list as input on text area blur */
     listAction: string;
     /** Our displayed tooltip displayed above all texts */
-    tooltip: string;
+    tooltip: ReactNode;
     /** Do we force the input to always send the maxEntries as list length to byond */
     exactLength: boolean;
     /** The amount of possible list entries. By default 10 */

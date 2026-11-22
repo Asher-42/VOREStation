@@ -142,6 +142,7 @@
 	data["show_pictures"] = null
 	data["icon_overflow"] = null
 	data["prey_abilities"] = null
+	data["intent_data"] = null
 	data["our_bellies"] = null
 	data["selected"] = null
 	data["soulcatcher"] = null
@@ -168,7 +169,13 @@
 			// Content Data
 			data["show_pictures"] = show_pictures
 			data["icon_overflow"] = icon_overflow
-			data["prey_abilities"] = get_prey_abilities(host)
+			var/atom/hostloc = host.loc
+			// Allow VorePanel to show pred belly details even while indirectly inside
+			if(isliving(host))
+				var/mob/living/human_host = host
+				hostloc = human_host.surrounding_belly()
+			data["prey_abilities"] = get_prey_abilities(host, hostloc)
+			data["intent_data"] = get_intent_data(host, hostloc)
 
 		if(SOULCATCHER_TAB)
 			// Soulcatcher and abilities
@@ -327,7 +334,7 @@
 				var/choice = tgui_alert(ui.user, "Warning: Saving your vore panel while in the lobby will save it to the CURRENTLY LOADED character slot, and potentially overwrite it. Are you SURE you want to overwrite your current slot with these vore bellies?", "WARNING!", list("No, abort!", "Yes, save."))
 				if(choice != "Yes, save.")
 					return TRUE
-			else if(host.real_name != host.client.prefs.real_name || (!ishuman(host) && !issilicon(host)))
+			else if(host.real_name != host.client.prefs.read_preference(/datum/preference/name/real_name) || (!ishuman(host) && !issilicon(host)))
 				var/choice = tgui_alert(ui.user, "Warning: Saving your vore panel while playing what is very-likely not your normal character will overwrite whatever character you have loaded in character setup. Maybe this is your 'playing a simple mob' slot, though. Are you SURE you want to overwrite your current slot with these vore bellies?", "WARNING!", list("No, abort!", "Yes, save."))
 				if(choice != "Yes, save.")
 					return TRUE
@@ -642,11 +649,22 @@
 			unsaved_changes = TRUE
 			return TRUE
 		if("switch_selective_mode_pref")
-			host.selective_preference = tgui_input_list(ui.user, "What would you prefer happen to you with selective bellymode?","Selective Bellymode", list(DM_DEFAULT, DM_DIGEST, DM_ABSORB, DM_DRAIN))
-			if(!(host.selective_preference))
-				host.selective_preference = DM_DEFAULT
+			var/new_selective_preference = params["val"]
+			if(new_selective_preference == host.selective_preference)
+				return FALSE
+			host.selective_preference = new_selective_preference
 			if(host.client.prefs_vr)
 				host.client.prefs_vr.selective_preference = host.selective_preference
+			unsaved_changes = TRUE
+			return TRUE
+		if("switch_strip_mode_pref")
+			var/new_size_strip_pref = text2num(params["val"])
+			new_size_strip_pref = clamp(new_size_strip_pref, SIZESTRIP_NONE, SIZESTRIP_ALL)
+			if(new_size_strip_pref == host.size_strip_preference)
+				return FALSE
+			host.size_strip_preference = new_size_strip_pref
+			if(host.client.prefs_vr)
+				host.client.prefs_vr.size_strip_preference = host.size_strip_preference
 			unsaved_changes = TRUE
 			return TRUE
 		if("toggle_nutrition_ex")
@@ -728,6 +746,15 @@
 			host.no_latejoin_prey_warning_persists = !host.no_latejoin_prey_warning_persists
 			if(host.client.prefs_vr)
 				host.client.prefs_vr.no_latejoin_prey_warning_persists = host.no_latejoin_prey_warning_persists
+			unsaved_changes = TRUE
+			return TRUE
+		if("toggle_vore_pref_types")
+			var/toggle_pref_flag = params["val"]
+			if(!(toggle_pref_flag in GLOB.vore_pref_types))
+				return FALSE
+			host.vore_pref_type_flags ^= GLOB.vore_pref_types[toggle_pref_flag]
+			if(host.client.prefs_vr)
+				host.client.prefs_vr.vore_pref_type_flags = host.vore_pref_type_flags
 			unsaved_changes = TRUE
 			return TRUE
 		//Soulcatcher prefs
@@ -907,7 +934,7 @@
 				return
 			entries[index] = hex
 			preset_colors = entries.Join(";")
-			return FALSE
+			return TRUE
 
 /datum/vore_look/proc/pick_from_inside(mob/user, params)
 	var/atom/movable/target = locate(params["pick"])
@@ -1454,7 +1481,7 @@
 			return TRUE
 	return FALSE
 
-/datum/vore_look/proc/sanitize_fixed_list(var/list/messages, type, delim = "\n\n", limit)
+/datum/vore_look/proc/sanitize_fixed_list(list/messages, type, delim = "\n\n", limit)
 	if(!limit)
 		CRASH("[type] set message called without limit!")
 	VPPREF_MESSAGE_SANITY(type)

@@ -40,49 +40,6 @@
 
 #define AI_CAMERA_LUMINOSITY 6
 
-// Camera networks
-#define NETWORK_CRESCENT "Spaceport"
-// #define NETWORK_CAFE_DOCK "Cafe Dock"
-#define NETWORK_CARGO "Cargo"
-#define NETWORK_CIRCUITS "Circuits"
-#define NETWORK_CIVILIAN "Civilian"
-// #define NETWORK_CIVILIAN_EAST "Civilian East"
-// #define NETWORK_CIVILIAN_WEST "Civilian West"
-#define NETWORK_COMMAND "Command"
-#define NETWORK_ENGINE "Engine"
-#define NETWORK_ENGINEERING "Engineering"
-#define NETWORK_ENGINEERING_OUTPOST "Engineering Outpost"
-#define NETWORK_ERT "ZeEmergencyResponseTeam"
-#define NETWORK_DEFAULT "Station"
-#define NETWORK_MEDICAL "Medical"
-#define NETWORK_MERCENARY "MercurialNet"
-#define NETWORK_MINE "Mining Outpost"
-#define NETWORK_NORTHERN_STAR "Northern Star"
-#define NETWORK_RESEARCH "Research"
-#define NETWORK_RESEARCH_OUTPOST "Research Outpost"
-#define NETWORK_ROBOTS "Robots"
-#define NETWORK_PRISON "Prison"
-#define NETWORK_SECURITY "Security"
-#define NETWORK_INTERROGATION "Interrogation"
-#define NETWORK_TELECOM "Telecomms"
-#define NETWORK_EXPLORATION "Exploration"
-#define NETWORK_XENOBIO "Xenobiology"
-#define NETWORK_THUNDER "Entertainment"		//VOREStation Edit: broader definition
-#define NETWORK_COMMUNICATORS "Communicators"
-#define NETWORK_ALARM_ATMOS "Atmosphere Alarms"
-#define NETWORK_ALARM_POWER "Power Alarms"
-#define NETWORK_ALARM_FIRE "Fire Alarms"
-#define NETWORK_TALON_HELMETS "TalonHelmets" //VOREStation Add
-#define NETWORK_TALON_SHIP "TalonShip" //VOREStation Add
-
-//Camera networks
-#define NETWORK_TETHER "Tether"
-#define NETWORK_OUTSIDE "Outside"
-#define NETWORK_HALLS "Halls"
-
-// Those networks can only be accessed by pre-existing terminals. AIs and new terminals can't use them.
-var/list/restricted_camera_networks = list(NETWORK_ERT,NETWORK_MERCENARY,"Secret", NETWORK_COMMUNICATORS)
-
 #define TRANSMISSION_WIRE		0 //Is this ever used? I don't think it is.
 #define TRANSMISSION_RADIO		1 //Radio transmissions (like airlock controller to pump)
 #define TRANSMISSION_SUBSPACE	2 //Like headsets

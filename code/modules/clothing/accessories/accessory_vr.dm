@@ -29,14 +29,14 @@
 		icon_override = sprite_sheets[H.species.get_bodytype(H)]
 		update_clothing_icon()
 
-/obj/item/clothing/accessory/choker/on_attached(var/obj/item/clothing/S, var/mob/user)
+/obj/item/clothing/accessory/choker/on_attached(obj/item/clothing/S, mob/user)
 	if(!istype(S))
 		return
 	has_suit = S
 	setUniqueSpeciesSprite()
 	..(S, user)
 
-/obj/item/clothing/accessory/choker/dropped(mob/user)
+/obj/item/clothing/accessory/choker/dropped(mob/user, equipping, slot)
 	..()
 	icon_override = icon_previous_override
 
@@ -48,6 +48,7 @@
 	special_handling = TRUE
 	///Var for attack_self chain
 	var/special_collar = FALSE
+	default_worn_icon = INV_ACCESSORIES_DEF_ICON
 
 //Forces different sprite sheet on equip
 /obj/item/clothing/accessory/collar/Initialize(mapload)
@@ -66,14 +67,14 @@
 		icon_override = sprite_sheets[H.species.get_bodytype(H)]
 		update_clothing_icon()
 
-/obj/item/clothing/accessory/collar/on_attached(var/obj/item/clothing/S, var/mob/user)
+/obj/item/clothing/accessory/collar/on_attached(obj/item/clothing/S, mob/user)
 	if(!istype(S))
 		return
 	has_suit = S
 	setUniqueSpeciesSprite()
 	..(S, user)
 
-/obj/item/clothing/accessory/collar/dropped(mob/user)
+/obj/item/clothing/accessory/collar/dropped(mob/user, equipping, slot)
 	..()
 	icon_override = icon_previous_override
 
@@ -191,7 +192,8 @@
 			. = TRUE
 		if("power")
 			on = !on
-			icon_state = "collar_shk[on]"
+			if(!istype(src, /obj/item/clothing/accessory/collar/shock/bluespace))
+				icon_state = "collar_shk[on]"
 			. = TRUE
 		if("tag")
 			var/sanitized = tgui_input_text(ui.user, "Tag text?", "Set Tag", "", MAX_NAME_LEN, encode = TRUE)
@@ -258,12 +260,12 @@
 	icon_state = "collar_holo"
 	item_state = "collar_holo"
 	overlay_state = "collar_holo"
-	matter = list(MAT_STEEL = 50)
+	matter = list(MAT_STEEL = MATERIAL_COST(0.025))
 
 /obj/item/clothing/accessory/collar/holo/indigestible
 	desc = "A special variety of the holo-collar that seems to be made of a very durable fabric that fits around the neck."
 //Make indigestible
-/obj/item/clothing/accessory/collar/holo/indigestible/digest_act(var/atom/movable/item_storage = null)
+/obj/item/clothing/accessory/collar/holo/indigestible/digest_act(atom/movable/item_storage = null)
 	return FALSE
 
 /obj/item/clothing/accessory/collar/attack_self(mob/user)
@@ -290,12 +292,12 @@
 		to_chat(user,span_notice("You set the [name]'s tag to '[str]'."))
 		initialize_tag(str)
 
-/obj/item/clothing/accessory/collar/proc/initialize_tag(var/tag)
+/obj/item/clothing/accessory/collar/proc/initialize_tag(tag)
 		name = initial(name) + " ([tag])"
 		desc = initial(desc) + " \"[tag]\" has been engraved on the tag."
 		writtenon = 1
 
-/obj/item/clothing/accessory/collar/holo/initialize_tag(var/tag)
+/obj/item/clothing/accessory/collar/holo/initialize_tag(tag)
 		..()
 		desc = initial(desc) + " The tag says \"[tag]\"."
 
@@ -313,7 +315,7 @@
 
 	to_chat(user,span_notice("You need a pen or a screwdriver to edit the tag on this collar."))
 
-/obj/item/clothing/accessory/collar/proc/update_collartag(mob/user, obj/item/I, var/erasemethod, var/erasing, var/writemethod)
+/obj/item/clothing/accessory/collar/proc/update_collartag(mob/user, obj/item/I, erasemethod, erasing, writemethod)
 	if(!(istype(user.get_active_hand(),I)) || !(istype(user.get_inactive_hand(),src)) || (user.stat))
 		return
 
@@ -397,7 +399,7 @@
 				return
 			last_activated = world.time
 			original_size = H.size_multiplier
-			H.resize(target_size, ignore_prefs = FALSE)		//In case someone else tries to put it on you.
+			H.resize(target_size, ignore_prefs = FALSE, allow_stripping = TRUE)		//In case someone else tries to put it on you.
 			H.visible_message(span_warning("The space around [H] distorts as they change size!"),span_notice("The space around you distorts as you change size!"))
 			log_admin("Admin [key_name(M)]'s size was altered by a bluespace collar.")
 			s.set_up(3, 1, M)
@@ -407,19 +409,19 @@
 				H.visible_message(span_warning("The space around [H] twists and turns for a moment but then nothing happens."),span_notice("The space around you distorts but stay the same size."))
 				return
 			last_activated = world.time
-			H.resize(original_size, ignore_prefs = FALSE)
+			H.resize(original_size, ignore_prefs = FALSE, allow_stripping = TRUE)
 			original_size = null
 			H.visible_message(span_warning("The space around [H] distorts as they return to their original size!"),span_notice("The space around you distorts as you return to your original size!"))
 			log_admin("Admin [key_name(M)]'s size was altered by a bluespace collar.")
-			to_chat(M, span_warning("\The [src] flickers. It is now recharging and will be ready again in ten  seconds."))
+			to_chat(M, span_warning("\The [src] flickers. It is now recharging and will be ready again in ten seconds."))
 			s.set_up(3, 1, M)
 			s.start()
 	return
 
-/obj/item/clothing/accessory/collar/shock/bluespace/relaymove(var/mob/living/user,var/direction)
+/obj/item/clothing/accessory/collar/shock/bluespace/relaymove(mob/living/user,direction)
 	return //For some reason equipping this item was triggering this proc, putting the wearer inside of the collars belly for some reason.
 
-/obj/item/clothing/accessory/collar/shock/bluespace/attackby(var/obj/item/component, mob/user as mob)
+/obj/item/clothing/accessory/collar/shock/bluespace/attackby(obj/item/component, mob/user as mob)
 	if (component.has_tool_quality(TOOL_WRENCH))
 		to_chat(user, span_notice("You crack the bluespace crystal [src]."))
 		var/turf/T = get_turf(src)
@@ -450,7 +452,7 @@
 	target_size = 1
 	on = 1
 
-/obj/item/clothing/accessory/collar/shock/bluespace/modified/attackby(var/obj/item/component, mob/user as mob)
+/obj/item/clothing/accessory/collar/shock/bluespace/modified/attackby(obj/item/component, mob/user as mob)
 	if (component.has_tool_quality(TOOL_WRENCH))
 		to_chat(user, span_notice("You crack the bluespace crystal [src], the attached signaler disconnects."))
 		var/turf/T = get_turf(src)
@@ -500,7 +502,7 @@
 				return
 			last_activated = world.time
 			original_size = H.size_multiplier
-			H.resize(target_size, ignore_prefs = FALSE)		//In case someone else tries to put it on you.
+			H.resize(target_size, ignore_prefs = FALSE, allow_stripping = TRUE)		//In case someone else tries to put it on you.
 			H.visible_message(span_warning("The space around [H] distorts as they change size!"),span_notice("The space around you distorts as you change size!"))
 			log_admin("Admin [key_name(M)]'s size was altered by a bluespace collar.")
 			s.set_up(3, 1, M)
@@ -510,11 +512,11 @@
 				H.visible_message(span_warning("The space around [H] twists and turns for a moment but then nothing happens."),span_notice("The space around you distorts but stay the same size."))
 				return
 			last_activated = world.time
-			H.resize(original_size, ignore_prefs = FALSE)
+			H.resize(original_size, ignore_prefs = FALSE, allow_stripping = TRUE)
 			original_size = null
 			H.visible_message(span_warning("The space around [H] distorts as they return to their original size!"),span_notice("The space around you distorts as you return to your original size!"))
 			log_admin("Admin [key_name(M)]'s size was altered by a bluespace collar.")
-			to_chat(M, span_warning("\The [src] flickers. It is now recharging and will be ready again in ten  seconds."))
+			to_chat(M, span_warning("\The [src] flickers. It is now recharging and will be ready again in ten seconds."))
 			s.set_up(3, 1, M)
 			s.start()
 	return
@@ -531,7 +533,7 @@
 	on = 1
 	var/currently_shrinking = 0
 
-/obj/item/clothing/accessory/collar/shock/bluespace/malfunctioning/attackby(var/obj/item/component, mob/user as mob)
+/obj/item/clothing/accessory/collar/shock/bluespace/malfunctioning/attackby(obj/item/component, mob/user as mob)
 	if (!istype(component,/obj/item/assembly/signaler))
 		..()
 		return
@@ -575,7 +577,7 @@
 			last_activated = world.time
 			original_size = H.size_multiplier
 			currently_shrinking = 1
-			H.resize(target_size, ignore_prefs = FALSE)		//In case someone else tries to put it on you.
+			H.resize(target_size, ignore_prefs = FALSE, allow_stripping = TRUE)		//In case someone else tries to put it on you.
 			H.visible_message(span_warning("The space around [H] distorts as they change size!"),span_notice("The space around you distorts as you change size!"))
 			log_admin("Admin [key_name(M)]'s size was altered by a bluespace collar.")
 			s.set_up(3, 1, M)
@@ -585,12 +587,12 @@
 				H.visible_message(span_warning("The space around [H] twists and turns for a moment but then nothing happens."),span_notice("The space around you distorts but stay the same size."))
 				return
 			last_activated = world.time
-			H.resize(original_size, ignore_prefs = FALSE)
+			H.resize(original_size, ignore_prefs = FALSE, allow_stripping = TRUE)
 			original_size = null
 			currently_shrinking = 0
 			H.visible_message(span_warning("The space around [H] distorts as they return to their original size!"),span_notice("The space around you distorts as you return to your original size!"))
 			log_admin("Admin [key_name(M)]'s size was altered by a bluespace collar.")
-			to_chat(M, span_warning("\The [src] flickers. It is now recharging and will be ready again in ten  seconds."))
+			to_chat(M, span_warning("\The [src] flickers. It is now recharging and will be ready again in ten seconds."))
 			s.set_up(3, 1, M)
 			s.start()
 	return

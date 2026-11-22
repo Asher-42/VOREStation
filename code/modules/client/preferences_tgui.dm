@@ -26,6 +26,9 @@
 		get_asset_datum(/datum/asset/json/preferences),
 	)
 
+	if(GLOB.asset_datums[/datum/asset/spritesheet_batched/pai_icons])
+		assets += get_asset_datum(/datum/asset/spritesheet_batched/pai_icons)
+
 	for (var/datum/preference_middleware/preference_middleware as anything in middleware)
 		assets += preference_middleware.get_ui_assets()
 
@@ -150,6 +153,7 @@
 			load_character()
 			client.prefs_vr.load_vore()
 			sanitize_preferences()
+			restore_preview_organs()
 			. = TRUE
 		if("resetslot")
 			if(!isnewplayer(ui.user))
@@ -160,6 +164,7 @@
 				return
 			reset_slot()
 			sanitize_preferences()
+			restore_preview_organs()
 			. = TRUE
 		if("copy")
 			if(!isnewplayer(ui.user))

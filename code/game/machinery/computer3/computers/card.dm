@@ -195,7 +195,7 @@
 		return 1
 	return 0
 
-/datum/file/program/card_comp/proc/set_default_access(var/jobname)
+/datum/file/program/card_comp/proc/set_default_access(jobname)
 	var/datum/job/jobdatum
 	for(var/jobtype in typesof(/datum/job))
 		var/datum/job/J = new jobtype
@@ -322,7 +322,6 @@
 			data_core.manifest_modify(writer.registered_name, writer.assignment, writer.rank)
 			SEND_GLOBAL_SIGNAL(COMSIG_GLOB_REASSIGN_EMPLOYEE_IDCARD, writer)
 
-	computer.updateUsrDialog(usr)
 	return
 
 /datum/file/program/card_comp/centcom

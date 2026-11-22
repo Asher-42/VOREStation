@@ -1,5 +1,6 @@
 import {
   type ComponentProps,
+  type ReactNode,
   useEffect,
   useEffectEvent,
   useState,
@@ -7,9 +8,10 @@ import {
 import { useBackend } from 'tgui/backend';
 import { ColorSelector } from 'tgui/interfaces/ColorPickerModal';
 import { type HsvaColor, hexToHsva, hsvaToHex } from 'tgui-core/color';
-import { Box, Floating, Stack, Tooltip } from 'tgui-core/components';
+import { Box, Floating, Stack } from 'tgui-core/components';
 import { VorePanelColorBox } from './VorePanelCommonElements';
 import { VorePanelEditNumber } from './VorePanelEditNumber';
+import { VorePanelTooltip } from './VorePanelTooltip';
 
 export const VorePanelEditColor = (
   props: {
@@ -27,7 +29,7 @@ export const VorePanelEditColor = (
     /** Optional label to show before the color box */
     name_of: string;
     /** Our displayed tooltip behind the input element */
-    tooltip: string;
+    tooltip: ReactNode;
     /** The position of the tooltip if static */
     tooltipPosition: ComponentProps<typeof Floating>['placement'];
     /** Removes the spacing behind the color box */
@@ -65,13 +67,13 @@ export const VorePanelEditColor = (
   const [lastSelectedColor, setLastSelectedColor] = useState<string>('');
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     if (!isOpen) {
       timeoutId = setTimeout(() => {
         setInitialColor(back_color);
         setCurrentColor(hexToHsva(back_color));
-      }, 300);
+      }, 100);
     }
 
     return () => {
@@ -87,7 +89,7 @@ export const VorePanelEditColor = (
 
     const timeoutId = setTimeout(() => {
       onRealtimeValue(hsvaToHex(currentColor));
-    }, 300);
+    }, 100);
 
     return () => {
       clearTimeout(timeoutId);
@@ -147,9 +149,9 @@ export const VorePanelEditColor = (
   function handleIsOpen(newState: boolean) {
     setIsOpen(newState);
     if (!newState) {
-      const newHeColor = hsvaToHex(currentColor).toLowerCase();
-      if (back_color.toLowerCase() !== newHeColor) {
-        act(action, { attribute: subAction, val: newHeColor });
+      const newHexColor = hsvaToHex(currentColor).toLowerCase();
+      if (back_color.toLowerCase() !== newHexColor) {
+        act(action, { attribute: subAction, val: newHexColor });
       }
     }
   }
@@ -212,9 +214,11 @@ export const VorePanelEditColor = (
               tooltip={tooltip}
             />
           ) : (
-            <Tooltip content={tooltip} position={tooltipPosition}>
-              <Box className="VorePanel__floatingButton">?</Box>
-            </Tooltip>
+            <VorePanelTooltip
+              tooltip={tooltip}
+              tooltipPosition={tooltipPosition}
+              displayText="?"
+            />
           )}
         </Stack.Item>
       )}

@@ -55,6 +55,7 @@
 	var/category_drinks		 = 2
 	var/category_implants	 = 1
 	var/category_event		 = 1	//For special events, holidays, etc
+	var/category_pets		 = 2
 
 /obj/machinery/casino_prize_dispenser/Initialize(mapload)
 	. = ..()
@@ -208,7 +209,7 @@
 		return
 	..()
 
-/obj/machinery/casino_prize_dispenser/proc/pay_with_chips(var/obj/item/spacecasinocash/cashmoney, mob/user, var/price)
+/obj/machinery/casino_prize_dispenser/proc/pay_with_chips(obj/item/spacecasinocash/cashmoney, mob/user, price)
 	//"cashmoney_:[cashmoney] user:[user] currently_vending:[currently_vending]"
 	if(price > cashmoney.worth)
 		to_chat(user, "[icon2html(cashmoney, user.client)] " + span_warning("That is not enough chips."))
@@ -282,6 +283,8 @@
 					restriction_check = category_implants
 				if("event")
 					restriction_check = category_event
+				if("pets")
+					restriction_check = category_pets
 				else
 					to_chat(ui.user, span_warning("Prize checkout error has occurred, purchase cancelled."))
 					return FALSE
@@ -336,7 +339,7 @@
 	log[++log.len] = prize_log
 	//Currently doesnt have an ingame way to show. Can only be viewed through View-Variables, to ensure theres no chance of players ckeys exposed - Jack
 
-/obj/machinery/casino_prize_dispenser/proc/speak(var/message)
+/obj/machinery/casino_prize_dispenser/proc/speak(message)
 	if(stat & NOPOWER)
 		return
 

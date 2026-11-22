@@ -166,23 +166,44 @@ GLOBAL_LIST_INIT(modulo_angle_to_dir, list(NORTH,NORTHEAST,EAST,SOUTHEAST,SOUTH,
 		else                return ICON_OVERLAY
 
 // Converts a rights bitfield into a string
-/proc/rights2text(rights,seperator="")
-	if (rights & R_BUILDMODE)   . += "[seperator]+BUILDMODE"
-	if (rights & R_ADMIN)       . += "[seperator]+ADMIN"
-	if (rights & R_BAN)         . += "[seperator]+BAN"
-	if (rights & R_FUN)         . += "[seperator]+FUN"
-	if (rights & R_SERVER)      . += "[seperator]+SERVER"
-	if (rights & R_DEBUG)       . += "[seperator]+DEBUG"
-	if (rights & R_POSSESS)     . += "[seperator]+POSSESS"
-	if (rights & R_PERMISSIONS) . += "[seperator]+PERMISSIONS"
-	if (rights & R_STEALTH)     . += "[seperator]+STEALTH"
-	if (rights & R_REJUVINATE)  . += "[seperator]+REJUVINATE"
-	if (rights & R_VAREDIT)     . += "[seperator]+VAREDIT"
-	if (rights & R_SOUNDS)      . += "[seperator]+SOUND"
-	if (rights & R_SPAWN)       . += "[seperator]+SPAWN"
-	if (rights & R_MOD)         . += "[seperator]+MODERATOR"
-	if (rights & R_EVENT)       . += "[seperator]+EVENT"
-	if (rights & R_MENTOR)      . += "[seperator]+MENTOR"
+/proc/rights2text(rights, seperator="", prefix = "+")
+	seperator += prefix
+	if(rights & R_BUILDMODE)
+		. += "[seperator]BUILDMODE"
+	if(rights & R_ADMIN)
+		. += "[seperator]ADMIN"
+	if(rights & R_BAN)
+		. += "[seperator]BAN"
+	if(rights & R_FUN)
+		. += "[seperator]FUN"
+	if(rights & R_SERVER)
+		. += "[seperator]SERVER"
+	if(rights & R_DEBUG)
+		. += "[seperator]DEBUG"
+	if(rights & R_POSSESS)
+		. += "[seperator]POSSESS"
+	if(rights & R_PERMISSIONS)
+		. += "[seperator]PERMISSIONS"
+	if(rights & R_STEALTH)
+		. += "[seperator]STEALTH"
+	if(rights & R_REJUVINATE)
+		. += "[seperator]REJUVINATE"
+	if(rights & R_VAREDIT)
+		. += "[seperator]VAREDIT"
+	if(rights & R_SOUNDS)
+		. += "[seperator]SOUND"
+	if(rights & R_SPAWN)
+		. += "[seperator]SPAWN"
+	if (rights & R_MOD)
+		. += "[seperator]MODERATOR"
+	if (rights & R_EVENT)
+		. += "[seperator]EVENT"
+	if (rights & R_MENTOR)
+		. += "[seperator]MENTOR"
+	if(rights & R_DBRANKS)
+		. += "[seperator]DBRANKS"
+	if(!.)
+		. = "NONE"
 	return .
 
 // Converts a hexadecimal color (e.g. #FF0050) to a list of numbers for red, green, and blue (e.g. list(255,0,80) ).
@@ -410,7 +431,7 @@ GLOBAL_LIST_INIT(modulo_angle_to_dir, list(NORTH,NORTHEAST,EAST,SOUTHEAST,SOUTH,
 //The string is well, obviously the string being checked
 //The datum is used as a source for var names, to check validity
 //Otherwise every single word could technically be a variable!
-/proc/string2listofvars(var/t_string, var/datum/var_source)
+/proc/string2listofvars(t_string, datum/var_source)
 	if(!t_string || !var_source)
 		return list()
 
@@ -611,8 +632,31 @@ GLOBAL_LIST_INIT(modulo_angle_to_dir, list(NORTH,NORTHEAST,EAST,SOUTHEAST,SOUTH,
 		if(!isnull(text))
 			.[text] = ""
 
-/proc/check_list_copy(var/i)
+/proc/check_list_copy(i)
 	if(islist(i))
 		var/list/l = i
 		return l.Copy()
 	return i
+
+/proc/slot2body_zone(slot)
+	switch(slot)
+		if(SLOT_BACK, SLOT_OCLOTHING, SLOT_ICLOTHING, SLOT_BELT, SLOT_ID)
+			return BP_TORSO
+
+		if(SLOT_GLOVES)
+			return pick(BP_L_HAND, BP_R_HAND)
+
+		if(SLOT_HEAD, SLOT_TWOEARS, SLOT_TIE, SLOT_EARS)
+			return BP_HEAD
+
+		if(SLOT_MASK)
+			return BP_HEAD
+
+		if(SLOT_EYES)
+			return BP_HEAD
+
+		if(SLOT_FEET)
+			return pick(BP_R_FOOT, BP_L_FOOT)
+
+//		if(SLOT_LEGCUFFED)
+//			return pick(BP_L_LEG, BODY_ZONE_R_LEG)

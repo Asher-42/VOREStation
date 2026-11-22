@@ -5,18 +5,21 @@
 		if(isrobot(owner))
 			var/mob/living/silicon/robot/R = owner
 			if(R.cell && R.cell.charge >= gen_cost*10 && gen_interval >= gen_time)
-				GenerateBellyReagents()
+				if(R.cell.percent() >= reagent_gen_cost_limit)
+					GenerateBellyReagents()
 				gen_interval = 0
-			else
-				gen_interval++
-		else
-			if(owner.nutrition >= gen_cost && gen_interval >= gen_time)
-				GenerateBellyReagents()
-				gen_interval = 0
-			else
-				gen_interval++
+				return
+			gen_interval++
+			return
 
-/obj/belly/proc/HandleBellyReagentEffects(var/list/touchable_atoms)
+		if(owner.nutrition >= gen_cost && gen_interval >= gen_time)
+			if(owner.nutrition_percent() >= reagent_gen_cost_limit)
+				GenerateBellyReagents()
+			gen_interval = 0
+			return
+		gen_interval++
+
+/obj/belly/proc/HandleBellyReagentEffects(list/touchable_atoms)
 	if(LAZYLEN(contents))
 		if(show_liquids && reagent_touches && reagents.total_volume >= 5)
 			var/affecting_amt = reagents.total_volume / max(LAZYLEN(touchable_atoms), 1)
@@ -51,7 +54,7 @@
 		if(!R.use_direct_power(gen_cost*10, 200))
 			return
 	else
-		owner.nutrition -= gen_cost
+		owner.adjust_nutrition(-gen_cost)
 	for(var/reagent in generated_reagents)
 		reagents.add_reagent(reagent, generated_reagents[reagent], was_from_belly = TRUE)
 	if(count_liquid_for_sprite)
@@ -335,7 +338,7 @@
 			return
 		vore_fx(owner)
 
-/obj/belly/deserialize(var/list/data)
+/obj/belly/deserialize(list/data)
 	..()
 	if(!SSchemistry.chemical_reagents[reagentid])
 		to_chat(owner, span_warning("Belly reagent with ID \"[reagentid]\" not found, please reselect your liquid reagent"))

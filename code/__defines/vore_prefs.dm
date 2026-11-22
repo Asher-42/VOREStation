@@ -12,6 +12,7 @@
 	target.noisy = source.noisy;														\
 	target.show_vore_fx = source.show_vore_fx;											\
 	target.selective_preference = source.selective_preference;							\
+	target.size_strip_preference = source.size_strip_preference;						\
 	target.digest_leave_remains = source.digest_leave_remains;							\
 	target.digest_pain = source.digest_pain;											\
 	target.noisy_full = source.noisy_full;												\
@@ -69,4 +70,5 @@
 	target.belly_rub_target = source.belly_rub_target;									\
 																						\
 	target.soulcatcher_pref_flags = source.soulcatcher_pref_flags;						\
-	target.persistend_edit_mode = source.persistend_edit_mode;
+	target.persistend_edit_mode = source.persistend_edit_mode;							\
+	target.vore_pref_type_flags = source.vore_pref_type_flags;

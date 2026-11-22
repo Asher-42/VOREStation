@@ -13,7 +13,7 @@
 	economic_modifier = 20
 	whitelist_only = 1
 	latejoin_only = 1
-	outfit_type = /decl/hierarchy/outfit/job/centcom_officer
+	outfit_type = /datum/decl/hierarchy/outfit/job/centcom_officer
 	job_description = "A Central Command Officer is there on official business. Most of time. Whatever it is, they're a VIP."
 
 	minimum_character_age = 25
@@ -22,7 +22,7 @@
 	pto_type = PTO_CIVILIAN
 
 /datum/job/centcom_officer/get_access()
-	return get_all_accesses().Copy()
+	return SSaccess.get_all_accesses().Copy()
 
 /datum/job/emergency_responder //For staff managing/leading ERTs
 	title = "Emergency Responder"
@@ -39,7 +39,7 @@
 	economic_modifier = 20
 	whitelist_only = 1
 	latejoin_only = 1
-	outfit_type = /decl/hierarchy/outfit/job/emergency_responder
+	outfit_type = /datum/decl/hierarchy/outfit/job/emergency_responder
 	job_description = "Emergency Responders are usually called in to deal with on-station emergencies that the crew require assistance to deal with."
 
 	minimum_character_age = 18
@@ -48,7 +48,7 @@
 	pto_type = PTO_CIVILIAN
 
 /datum/job/emergency_responder/get_access()
-	return get_all_accesses().Copy()
+	return SSaccess.get_all_accesses().Copy()
 
 /datum/job/clown
 	title = JOB_CLOWN
@@ -65,7 +65,7 @@
 	whitelist_only = 1
 	latejoin_only = 0
 	requestable = FALSE
-	outfit_type = /decl/hierarchy/outfit/job/clown
+	outfit_type = /datum/decl/hierarchy/outfit/job/clown
 	pto_type = PTO_CIVILIAN
 	alt_titles = list(JOB_ALT_JESTER = /datum/alt_title/jester, JOB_ALT_FOOL = /datum/alt_title/fool)
 
@@ -97,8 +97,14 @@
 	whitelist_only = 1
 	latejoin_only = 0
 	requestable = FALSE
-	outfit_type = /decl/hierarchy/outfit/job/mime
+	outfit_type = /datum/decl/hierarchy/outfit/job/mime
 	pto_type = PTO_CIVILIAN
+
+/datum/job/mime/equip(mob/living/carbon/human/H, alt_title)
+	. = ..()
+	if(H.mind)
+		var/datum/action/innate/vow_of_silence/vow = new(H)
+		vow.Grant(H)
 
 /datum/alt_title/poseur
 	title = JOB_ALT_PASEUR
@@ -127,6 +133,6 @@
 	whitelist_only = 1
 	latejoin_only = 1
 	requestable = FALSE
-	outfit_type = /decl/hierarchy/outfit/maint_lurker
+	outfit_type = /datum/decl/hierarchy/outfit/maint_lurker
 	access = list(ACCESS_MAINT_TUNNELS)
 	minimal_access = list(ACCESS_MAINT_TUNNELS)

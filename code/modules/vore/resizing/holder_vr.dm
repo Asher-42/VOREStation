@@ -1,5 +1,5 @@
-/obj/item/holder/dropped(mob/user)
-	if (held_mob?.loc != src || isturf(loc))
+/obj/item/holder/dropped(mob/user, equipping, slot)
+	if(held_mob?.loc != src || isturf(loc))
 		var/held = held_mob
 		dump_mob()
 		held_mob = held
@@ -30,7 +30,6 @@
 			return
 
 	src.pickup(user)
-	src.throwing = 0
 	if (src.loc == user)
 		if(!mob_can_unequip(user, user.get_inventory_slot(src))) //VOREStation Edit
 			return

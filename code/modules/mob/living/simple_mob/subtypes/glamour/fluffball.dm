@@ -64,7 +64,7 @@
 	fluff.desc = "You find yourself sinking deeper and deeper into the fluff around you, steadily it wraps around your entire body, binding you up. It seems to grow tighter and tigher forever, although never to the point of discomfort. Before long, the tightness goes beyond a physical sensation, it starts to feel like it buries into you, becoming part of you. It is becoming hard to discern yourself from the fluff, you feel floaty, wavy and soft yourself. Eventually, you can't feel yourself at all, there's nothing but fur. Every movement you make feels pointless, simply causing the slightest rustling of fluff as though the hair was moving on its own."
 	fluff.digest_mode = DM_HOLD // like, shes got you already, doesn't need to get you more
 	fluff.mode_flags = DM_FLAG_FORCEPSAY
-	fluff.escapable = TRUE // good luck
+	fluff.escapable = B_ESCAPABLE_DEFAULT // good luck
 	fluff.escapechance = 40 // high chance of STARTING a successful escape attempt
 	fluff.escapechance_absorbed = 5 // m i n e
 	fluff.vore_verb = "soak"
@@ -115,7 +115,7 @@
 	though it is known to act more calm around those carrying food, which it is quick to steal from people's hands if offered. However, they have been observed to use their tails as weapons when panicked and unable to flee."
 	value = CATALOGUER_REWARD_HARD
 
-/mob/living/simple_mob/vore/fluffball/PounceTarget(var/mob/living/M, var/successrate = 100)
+/mob/living/simple_mob/vore/fluffball/PounceTarget(mob/living/M, successrate = 100)
 	vore_pounce_cooldown = world.time + 20 SECONDS // don't attempt another pounce for a while
 	if(prob(successrate)) // pounce success!
 		M.Weaken(5)
