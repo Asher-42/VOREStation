@@ -137,6 +137,16 @@
 	has_vore_belly_resting_sprites = TRUE
 	hat_offset = DRAKE_HAT_OFFSET
 
+/datum/robot_sprite/dogborg/surgical/wyvern
+	name = "Wyvern"
+	sprite_icon_state = "wyvern"
+	has_eye_light_sprites = TRUE
+	has_rest_eyes_sprites = TRUE
+	has_rest_lights_sprites = TRUE
+	has_rest_sprites = TRUE
+	sprite_icon = 'icons/mob/robot/wyvern/WyvernFrameMining.dmi'
+	rest_sprite_options = list("Default", "Sit")
+
 // Tall sprites
 
 /datum/robot_sprite/dogborg/tall/mining
